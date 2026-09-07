@@ -135,7 +135,7 @@ button:hover {
     align-items: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.1s ease; /* Instant fade in */
 }
 
 #video-overlay.active {
@@ -178,7 +178,7 @@ button:hover {
 <!-- FULLSCREEN OUTRO VIDEO OVERLAY -->
 <div id="video-overlay">
     <video id="outro-video" playsinline muted preload="auto">
-        <source src="https://github.com/skksilver/SHINJUKU-CAPSULE-HOTEL/raw/main/1788763122682341.mov" type="video/mp4">
+        <source src="https://github.com/skksilver/SHINJUKU-CAPSULE-HOTEL/raw/main/1788763122682341.mov">
     </video>
 </div>
 
@@ -213,13 +213,15 @@ let selectedLang = null;
 const video = document.getElementById("outro-video");
 const overlay = document.getElementById("video-overlay");
 
-// Preload video buffer immediately on load
-window.addEventListener("load", () => {
-    video.load();
-});
-
 function selectLanguage(lang) {
     selectedLang = lang;
+
+    // PRE-WARM VIDEO: Play and pause immediately on first tap.
+    // This unlocks video audio/playback permissions and begins buffering video data.
+    video.play().then(() => {
+        video.pause();
+        video.currentTime = 0;
+    }).catch(() => {});
 
     document.getElementById("gender-title").innerText = genderText[lang].title;
     document.getElementById("btn-male").innerText = genderText[lang].male;
@@ -246,9 +248,6 @@ function selectGender(gender) {
 
     const destinationUrl = links[selectedLang][gender];
 
-    // Show black background overlay immediately
-    overlay.classList.add("active");
-
     let redirected = false;
     function navigate() {
         if (!redirected) {
@@ -257,24 +256,25 @@ function selectGender(gender) {
         }
     }
 
-    // Direct synchronous playback call right inside user click event
     video.currentTime = 0;
+
+    // Play video instantly
     const playPromise = video.play();
+
+    // Reveal overlay right as playback starts
+    overlay.classList.add("active");
 
     if (playPromise !== undefined) {
         playPromise.then(() => {
-            // Video started successfully! Redirect when it finishes.
             video.onended = navigate;
         }).catch(err => {
-            // Browser strictly blocked video decoding/playback; redirect directly
-            console.warn("Video playback bypassed by browser policies:", err);
             navigate();
         });
     } else {
         video.onended = navigate;
     }
 
-    // Safety fallback timer if video hangs
+    // Backup safety timeout
     setTimeout(navigate, 4000);
 }
 
