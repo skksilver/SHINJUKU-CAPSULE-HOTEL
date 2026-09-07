@@ -118,36 +118,6 @@ button:hover {
     background: white;
     color: black;
 }
-
-/* =========================
-   OUTRO VIDEO OVERLAY
-========================= */
-#video-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: black;
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.1s ease;
-}
-
-#video-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-#outro-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
 </style>
 </head>
 <body>
@@ -175,13 +145,6 @@ button:hover {
     <button class="back" onclick="goBack()" id="btn-back">Back</button>
 </div>
 
-<!-- FULLSCREEN OUTRO VIDEO OVERLAY -->
-<div id="video-overlay">
-    <video id="outro-video" playsinline muted preload="auto" webkit-playsinline>
-        <source src="https://raw.githack.com/skksilver/SHINJUKU-CAPSULE-HOTEL/main/1788763122682341.mp4" type="video/mp4">
-    </video>
-</div>
-
 <script>
 const links = {
     en: {
@@ -206,23 +169,13 @@ const genderText = {
     en: { title: "Select Your Gender", male: "Male", female: "Female", back: "Back" },
     ja: { title: "性別を選択してください", male: "男性", female: "女性", back: "戻る" },
     zh: { title: "请选择性别", male: "男", female: "女", back: "返回" },
-    kr: { title: "성별을 선택하세요", male: "남성", female: "여性", back: "뒤로" }
+    kr: { title: "성별을 선택하세요", male: "남성", female: "여성", back: "뒤로" }
 };
 
 let selectedLang = null;
-const video = document.getElementById("outro-video");
-const overlay = document.getElementById("video-overlay");
-
-// Force video buffer load on startup
-window.addEventListener("load", () => {
-    video.load();
-});
 
 function selectLanguage(lang) {
     selectedLang = lang;
-
-    // Trigger video load on first user interaction to unlock mobile media restrictions
-    video.load();
 
     document.getElementById("gender-title").innerText = genderText[lang].title;
     document.getElementById("btn-male").innerText = genderText[lang].male;
@@ -246,38 +199,7 @@ function selectLanguage(lang) {
 
 function selectGender(gender) {
     if (!selectedLang) return;
-
-    const destinationUrl = links[selectedLang][gender];
-    let redirected = false;
-
-    function navigate() {
-        if (!redirected) {
-            redirected = true;
-            window.location.href = destinationUrl;
-        }
-    }
-
-    // Show black video overlay immediately
-    overlay.classList.add("active");
-
-    // Handle end event and video error fallbacks
-    video.onended = navigate;
-    video.onerror = navigate;
-
-    // Execute playback inside tap gesture handler
-    const playPromise = video.play();
-
-    if (playPromise !== undefined) {
-        playPromise.then(() => {
-            // Playback started successfully
-        }).catch(err => {
-            console.warn("Autoplay error or block, redirecting directly:", err);
-            navigate();
-        });
-    }
-
-    // Safety fallback: if video gets stuck or fails to reach 'ended', redirect after 5s
-    setTimeout(navigate, 5000);
+    window.location.href = links[selectedLang][gender];
 }
 
 function goBack() {
