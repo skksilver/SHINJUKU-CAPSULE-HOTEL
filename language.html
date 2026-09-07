@@ -20,7 +20,6 @@ body {
     text-align: center;
     width: 100%;
     max-width: 400px;
-    /* Smooth transitions for screen switching */
     transition: opacity 0.4s ease, transform 0.4s ease;
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -29,14 +28,12 @@ body {
 /* =========================
    PAGE TRANSITION CLASSES
 ========================= */
-/* Active state when visible */
 .container.active {
     opacity: 1;
     transform: scale(1) translateY(0);
     pointer-events: auto;
 }
 
-/* Hidden state when fading out */
 .container.hidden {
     display: none;
     opacity: 0;
@@ -44,7 +41,6 @@ body {
     pointer-events: none;
 }
 
-/* Class applied during smooth exit animation */
 .container.fade-out {
     opacity: 0;
     transform: scale(0.95) translateY(10px);
@@ -122,6 +118,36 @@ button:hover {
     background: white;
     color: black;
 }
+
+/* =========================
+   OUTRO VIDEO OVERLAY
+========================= */
+#video-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+#video-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#outro-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 </style>
 </head>
 <body>
@@ -147,6 +173,14 @@ button:hover {
     <button onclick="selectGender('male')" id="btn-male">Male</button>
     <button onclick="selectGender('female')" id="btn-female">Female</button>
     <button class="back" onclick="goBack()" id="btn-back">Back</button>
+</div>
+
+<!-- FULLSCREEN OUTRO VIDEO OVERLAY -->
+<div id="video-overlay">
+    <video id="outro-video" playsinline muted>
+        <!-- Replace YOUR_OUTRO_VIDEO_URL.mp4 with your video file link -->
+        <source src="https://github.com/skksilver/SHINJUKU-CAPSULE-HOTEL/blob/main/1788763122682341.mov" type="video/mp4">
+    </video>
 </div>
 
 <script>
@@ -181,7 +215,6 @@ let selectedLang = null;
 function selectLanguage(lang) {
     selectedLang = lang;
 
-    // 1. Update gender text in the background
     document.getElementById("gender-title").innerText = genderText[lang].title;
     document.getElementById("btn-male").innerText = genderText[lang].male;
     document.getElementById("btn-female").innerText = genderText[lang].female;
@@ -190,41 +223,52 @@ function selectLanguage(lang) {
     const stepLang = document.getElementById("step-language");
     const stepGender = document.getElementById("step-gender");
 
-    // 2. Fade out language screen
     stepLang.classList.add("fade-out");
 
     setTimeout(() => {
-        // 3. Hide step 1 completely
         stepLang.classList.remove("active", "fade-out");
         stepLang.classList.add("hidden");
 
-        // 4. Prepare step 2 and trigger fade in
         stepGender.classList.remove("hidden");
-        // Force browser layout repaint for smooth transition
         void stepGender.offsetWidth; 
         stepGender.classList.add("active");
-    }, 350); // Matches CSS transition duration
+    }, 350);
 }
 
 function selectGender(gender) {
     if (!selectedLang) return;
-    window.location.href = links[selectedLang][gender];
+
+    const destinationUrl = links[selectedLang][gender];
+    const overlay = document.getElementById("video-overlay");
+    const video = document.getElementById("outro-video");
+
+    // 1. Show full-screen video overlay
+    overlay.classList.add("active");
+
+    // 2. Play the video
+    video.currentTime = 0;
+    video.play().catch(err => {
+        // Fallback in case browser blocks video autoplay: redirect immediately
+        window.location.href = destinationUrl;
+    });
+
+    // 3. When the video ends, redirect to the Google Site
+    video.onended = function() {
+        window.location.href = destinationUrl;
+    };
 }
 
 function goBack() {
     const stepLang = document.getElementById("step-language");
     const stepGender = document.getElementById("step-gender");
 
-    // 1. Fade out gender screen
     stepGender.classList.remove("active");
     stepGender.classList.add("fade-out");
 
     setTimeout(() => {
-        // 2. Hide step 2 completely
         stepGender.classList.remove("fade-out");
         stepGender.classList.add("hidden");
 
-        // 3. Bring back step 1 with fade in
         stepLang.classList.remove("hidden");
         void stepLang.offsetWidth;
         stepLang.classList.add("active");
