@@ -17,11 +17,52 @@ body {
 .container {
     text-align: center;
 }
-h1 {
+
+/* =========================
+   ANIMATED TITLE STYLES
+========================= */
+.title-container {
+    position: relative;
+    height: 40px; /* Reserves space so page layout doesn't jump */
+    margin-bottom: 40px;
+}
+
+.animated-title {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    opacity: 0;
+    animation: fadeLang 8s infinite;
+}
+
+/* Delay each title so they fade in/out sequentially every 2 seconds */
+.animated-title:nth-child(1) { animation-delay: 0s; }
+.animated-title:nth-child(2) { animation-delay: 2s; }
+.animated-title:nth-child(3) { animation-delay: 4s; }
+.animated-title:nth-child(4) { animation-delay: 6s; }
+
+/* 8-second total loop animation keyframes */
+@keyframes fadeLang {
+    0% { opacity: 0; }
+    5% { opacity: 1; }
+    25% { opacity: 1; }
+    30% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+h1.static-title {
     margin-bottom: 40px;
     font-weight: 300;
     letter-spacing: 2px;
 }
+
 button {
     display: block;
     width: 220px;
@@ -57,7 +98,14 @@ button:hover {
 
 <!-- STEP 1: LANGUAGE -->
 <div class="container" id="step-language">
-    <h1>Select Your Language</h1>
+    <!-- Animated Crossfading Titles -->
+    <div class="title-container">
+        <h1 class="animated-title">Select Your Language</h1>
+        <h1 class="animated-title">言語を選択してください</h1>
+        <h1 class="animated-title">请选择语言</h1>
+        <h1 class="animated-title">언어를 선택하세요</h1>
+    </div>
+
     <button onclick="selectLanguage('en')">English</button>
     <button onclick="selectLanguage('ja')">日本語</button>
     <button onclick="selectLanguage('zh')">中文</button>
@@ -66,7 +114,7 @@ button:hover {
 
 <!-- STEP 2: GENDER -->
 <div class="container hidden" id="step-gender">
-    <h1 id="gender-title">Select Your Gender</h1>
+    <h1 class="static-title" id="gender-title">Select Your Gender</h1>
     <button onclick="selectGender('male')" id="btn-male">Male</button>
     <button onclick="selectGender('female')" id="btn-female">Female</button>
     <button class="back" onclick="goBack()" id="btn-back">Back</button>
