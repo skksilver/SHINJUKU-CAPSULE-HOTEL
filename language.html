@@ -135,7 +135,7 @@ button:hover {
     align-items: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.05s ease; /* Instant transition */
+    transition: opacity 0.1s ease;
 }
 
 #video-overlay.active {
@@ -178,7 +178,7 @@ button:hover {
 <!-- FULLSCREEN OUTRO VIDEO OVERLAY -->
 <div id="video-overlay">
     <video id="outro-video" playsinline muted preload="auto" webkit-playsinline>
-        <source src="https://github.com/skksilver/SHINJUKU-CAPSULE-HOTEL/raw/main/1788763122682341.mp4" type="video/mp4">
+        <source src="https://raw.githack.com/skksilver/SHINJUKU-CAPSULE-HOTEL/main/1788763122682341.mp4" type="video/mp4">
     </video>
 </div>
 
@@ -206,14 +206,14 @@ const genderText = {
     en: { title: "Select Your Gender", male: "Male", female: "Female", back: "Back" },
     ja: { title: "性別を選択してください", male: "男性", female: "女性", back: "戻る" },
     zh: { title: "请选择性别", male: "男", female: "女", back: "返回" },
-    kr: { title: "성별을 선택하세요", male: "남성", female: "여성", back: "뒤로" }
+    kr: { title: "성별을 선택하세요", male: "남성", female: "여性", back: "뒤로" }
 };
 
 let selectedLang = null;
 const video = document.getElementById("outro-video");
 const overlay = document.getElementById("video-overlay");
 
-// Preload video stream on page load
+// Force video buffer load on startup
 window.addEventListener("load", () => {
     video.load();
 });
@@ -221,11 +221,8 @@ window.addEventListener("load", () => {
 function selectLanguage(lang) {
     selectedLang = lang;
 
-    // Trigger silent play/pause on first tap to unlock mobile autoplay security policies
-    video.play().then(() => {
-        video.pause();
-        video.currentTime = 0;
-    }).catch(() => {});
+    // Trigger video load on first user interaction to unlock mobile media restrictions
+    video.load();
 
     document.getElementById("gender-title").innerText = genderText[lang].title;
     document.getElementById("btn-male").innerText = genderText[lang].male;
@@ -251,8 +248,8 @@ function selectGender(gender) {
     if (!selectedLang) return;
 
     const destinationUrl = links[selectedLang][gender];
-
     let redirected = false;
+
     function navigate() {
         if (!redirected) {
             redirected = true;
@@ -260,26 +257,27 @@ function selectGender(gender) {
         }
     }
 
-    // Reset video position and attempt synchronous play inside user click handler
-    video.currentTime = 0;
-    const playPromise = video.play();
-
-    // Make overlay active immediately
+    // Show black video overlay immediately
     overlay.classList.add("active");
+
+    // Handle end event and video error fallbacks
+    video.onended = navigate;
+    video.onerror = navigate;
+
+    // Execute playback inside tap gesture handler
+    const playPromise = video.play();
 
     if (playPromise !== undefined) {
         playPromise.then(() => {
-            video.onended = navigate;
+            // Playback started successfully
         }).catch(err => {
-            console.warn("Autoplay blocked, redirecting directly:", err);
+            console.warn("Autoplay error or block, redirecting directly:", err);
             navigate();
         });
-    } else {
-        video.onended = navigate;
     }
 
-    // Fallback safety timeout in case video stalls
-    setTimeout(navigate, 4000);
+    // Safety fallback: if video gets stuck or fails to reach 'ended', redirect after 5s
+    setTimeout(navigate, 5000);
 }
 
 function goBack() {
