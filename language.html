@@ -177,9 +177,8 @@ button:hover {
 
 <!-- FULLSCREEN OUTRO VIDEO OVERLAY -->
 <div id="video-overlay">
-    <video id="outro-video" playsinline muted>
-        <!-- Replace YOUR_OUTRO_VIDEO_URL.mp4 with your video file link -->
-        <source src="https://github.com/skksilver/SHINJUKU-CAPSULE-HOTEL/blob/main/1788763122682341.mov" type="video/mp4">
+    <video id="outro-video" playsinline muted preload="auto">
+        <source src="https://github.com/skksilver/SHINJUKU-CAPSULE-HOTEL/blob/main/1788763122682341.mov?raw=true">
     </video>
 </div>
 
@@ -242,19 +241,40 @@ function selectGender(gender) {
     const overlay = document.getElementById("video-overlay");
     const video = document.getElementById("outro-video");
 
-    // 1. Show full-screen video overlay
     overlay.classList.add("active");
 
-    // 2. Play the video
-    video.currentTime = 0;
-    video.play().catch(err => {
-        // Fallback in case browser blocks video autoplay: redirect immediately
-        window.location.href = destinationUrl;
-    });
+    let redirected = false;
+    function doRedirect() {
+        if (!redirected) {
+            redirected = true;
+            window.location.href = destinationUrl;
+        }
+    }
 
-    // 3. When the video ends, redirect to the Google Site
+    // Safety fallback: If video fails or takes longer than 3 seconds, redirect anyway
+    const fallbackTimer = setTimeout(doRedirect, 3000);
+
+    video.currentTime = 0;
+    
+    // Play video
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(err => {
+            console.warn("Autoplay blocked or video error:", err);
+            doRedirect();
+        });
+    }
+
+    // When video ends normally
     video.onended = function() {
-        window.location.href = destinationUrl;
+        clearTimeout(fallbackTimer);
+        doRedirect();
+    };
+
+    // If video errors out
+    video.onerror = function() {
+        clearTimeout(fallbackTimer);
+        doRedirect();
     };
 }
 
