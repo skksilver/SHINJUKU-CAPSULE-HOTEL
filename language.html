@@ -135,7 +135,7 @@ button:hover {
     align-items: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.1s ease; /* Instant fade in */
+    transition: opacity 0.05s ease; /* Instant transition */
 }
 
 #video-overlay.active {
@@ -177,8 +177,8 @@ button:hover {
 
 <!-- FULLSCREEN OUTRO VIDEO OVERLAY -->
 <div id="video-overlay">
-    <video id="outro-video" playsinline muted preload="auto">
-        <source src="https://github.com/skksilver/SHINJUKU-CAPSULE-HOTEL/blob/main/1788763122682341.mp4">
+    <video id="outro-video" playsinline muted preload="auto" webkit-playsinline>
+        <source src="https://github.com/skksilver/SHINJUKU-CAPSULE-HOTEL/raw/main/1788763122682341.mp4" type="video/mp4">
     </video>
 </div>
 
@@ -213,11 +213,15 @@ let selectedLang = null;
 const video = document.getElementById("outro-video");
 const overlay = document.getElementById("video-overlay");
 
+// Preload video stream on page load
+window.addEventListener("load", () => {
+    video.load();
+});
+
 function selectLanguage(lang) {
     selectedLang = lang;
 
-    // PRE-WARM VIDEO: Play and pause immediately on first tap.
-    // This unlocks video audio/playback permissions and begins buffering video data.
+    // Trigger silent play/pause on first tap to unlock mobile autoplay security policies
     video.play().then(() => {
         video.pause();
         video.currentTime = 0;
@@ -256,25 +260,25 @@ function selectGender(gender) {
         }
     }
 
+    // Reset video position and attempt synchronous play inside user click handler
     video.currentTime = 0;
-
-    // Play video instantly
     const playPromise = video.play();
 
-    // Reveal overlay right as playback starts
+    // Make overlay active immediately
     overlay.classList.add("active");
 
     if (playPromise !== undefined) {
         playPromise.then(() => {
             video.onended = navigate;
         }).catch(err => {
+            console.warn("Autoplay blocked, redirecting directly:", err);
             navigate();
         });
     } else {
         video.onended = navigate;
     }
 
-    // Backup safety timeout
+    // Fallback safety timeout in case video stalls
     setTimeout(navigate, 4000);
 }
 
