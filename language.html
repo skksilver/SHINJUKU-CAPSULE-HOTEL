@@ -16,28 +16,31 @@ body {
 }
 .container {
     text-align: center;
+    width: 100%;
+    max-width: 400px;
 }
 
 /* =========================
-   ANIMATED TITLE STYLES
+   ANIMATED TITLE STYLES (CENTERED)
 ========================= */
 .title-container {
     position: relative;
-    height: 40px; /* Reserves space so page layout doesn't jump */
+    width: 100%;
+    height: 40px; /* Reserves space so buttons don't jump */
     margin-bottom: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .animated-title {
     position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
     width: 100%;
     margin: 0;
+    text-align: center;
     font-size: 24px;
     font-weight: 300;
     letter-spacing: 2px;
-    white-space: nowrap;
     opacity: 0;
     animation: fadeLang 8s infinite;
 }
@@ -61,6 +64,7 @@ h1.static-title {
     margin-bottom: 40px;
     font-weight: 300;
     letter-spacing: 2px;
+    text-align: center;
 }
 
 button {
@@ -98,7 +102,7 @@ button:hover {
 
 <!-- STEP 1: LANGUAGE -->
 <div class="container" id="step-language">
-    <!-- Animated Crossfading Titles -->
+    <!-- Centered Animated Crossfading Titles -->
     <div class="title-container">
         <h1 class="animated-title">Select Your Language</h1>
         <h1 class="animated-title">言語を選択してください</h1>
